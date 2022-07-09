@@ -75,6 +75,7 @@ internal class AndroidARView(
     private lateinit var transformationSystem: TransformationSystem
     private var showFeaturePoints = false
     private var showAnimatedGuide = false
+    private var showNodeCenterRod = false
     private lateinit var animatedGuide: View
     private var pointCloudNode = Node()
     private var worldOriginNode = Node()
@@ -472,7 +473,7 @@ internal class AndroidARView(
         val argHandleRotation: Boolean? = call.argument<Boolean>("handleRotation")
         val argHandlePans: Boolean? = call.argument<Boolean>("handlePans")
         val argShowAnimatedGuide: Boolean? = call.argument<Boolean>("showAnimatedGuide")
-
+        var argShowNodeCenterRod: Boolean? = call.argument<Boolean>("showNodeCenterRod")
 
         sceneUpdateListener = com.google.ar.sceneform.Scene.OnUpdateListener {
             frameTime: FrameTime -> onFrame(frameTime)
@@ -494,6 +495,9 @@ internal class AndroidARView(
         arSceneView.scene?.addOnUpdateListener(sceneUpdateListener)
         arSceneView.scene?.addOnPeekTouchListener(onNodeTapListener)
 
+        if(argShowNodeCenterRod == true) {
+            showNodeCenterRod = true
+        }
 
         // Configure Plane scanning guide
         if (argShowAnimatedGuide == true) { // explicit comparison necessary because of nullable type

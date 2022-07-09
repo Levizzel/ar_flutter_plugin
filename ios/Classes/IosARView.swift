@@ -12,6 +12,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     let objectManagerChannel: FlutterMethodChannel
     let anchorManagerChannel: FlutterMethodChannel
     var showPlanes = false
+    var showNodeCenterRod = false
     var customPlaneTexturePath: String? = nil
     private var trackedPlanes = [UUID: (SCNNode, SCNNode)]()
     let modelBuilder = ArModelBuilder()
@@ -248,6 +249,10 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
             }
         }
 
+        if let showNodeCenter = arguments["showNodeCenterRod"] as? Bool {
+            self.showNodeCenterRod = showNodeCenter
+        }
+
         // Set plane rendering options
         if let configShowPlanes = arguments["showPlanes"] as? Bool {
             showPlanes = configShowPlanes
@@ -419,6 +424,12 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                                     case 0: //PlaneAnchor
                                         if let anchor = self.anchorCollection[anchorName]{
                                             // Attach node to the top-level node of the specified anchor
+                                            var geometry: SCNGeometry
+                                            geometry = SCNCylinder(0.005,3.0)
+                                            let centerRod = SCNNode(geometry: geometry)
+                                            centerRod.position = SCNVector3(x: 0, y: 0, z: 0)
+                                            
+                                            node.addChildNode(centerRod)
                                             self.sceneView.node(for: anchor)?.addChildNode(node)
                                             promise(.success(true))
                                         } else {

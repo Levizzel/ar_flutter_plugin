@@ -126,6 +126,16 @@ class ArModelBuilder {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
 
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
+        
+        val axisSize = 3.0f
+        val axisRadius = 0.005f
+        val yNode = Node()
+        yNode.worldPosition = Vector3(0f, axisSize / 2, 0f)
+
+        MaterialFactory.makeOpaqueWithColor(context, Color(255f, 0f, 0f))
+                .thenAccept { redMat ->
+                    yNode.renderable = ShapeFactory.makeCylinder(axisRadius, axisSize, Vector3.zero(), redMat)
+                }
         //gltfNode.scaleController.isEnabled = false
         //gltfNode.translationController.isEnabled = false
 
@@ -153,6 +163,7 @@ class ArModelBuilder {
                     gltfNode.worldScale = transform.first
                     gltfNode.worldPosition = transform.second
                     gltfNode.worldRotation = transform.third
+                    gltfNode.addChild(yNode)
                     completableFutureNode.complete(gltfNode)
                 }
                 .exceptionally{throwable ->
