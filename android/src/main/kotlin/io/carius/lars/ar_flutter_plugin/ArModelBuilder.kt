@@ -147,7 +147,16 @@ class ArModelBuilder {
             objectManagerChannel,
             transformationSystem
         )*/
+        if (modelPath == "YellowRod"){
+            val rod = Node()
+            rod.worldPosition = Vector3(0f, 2.0f / 2, 0f)
 
+            MaterialFactory.makeOpaqueWithColor(context, Color(255f, 255f, 0f))
+                .thenAccept { redMat ->
+                    rod.renderable = ShapeFactory.makeCylinder(0.01f, axisSize, Vector3.zero(), redMat)
+                }
+            completableFutureNode.complete(rod)
+        }else{
         ModelRenderable.builder()
                 .setSource(context, RenderableSource.builder().setSource(
                         context,
@@ -170,7 +179,7 @@ class ArModelBuilder {
                     completableFutureNode.completeExceptionally(throwable)
                     null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
                 }
-
+        }
         return completableFutureNode
     }
 }
