@@ -124,8 +124,19 @@ class ArModelBuilder {
     // Creates a node form a given glb model path or URL. The gltf asset loading in Sceneform is asynchronous, so the function returns a compleatable future of type Node
     fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
+        val localTransform = deserializeMatrix4(transformation)
+        
+        if (modelPath == "YellowRod.glb"){
+            val rod = Node()
+            rod.worldPosition = Vector3(0f, 2.0f / 2, 0f)
 
-        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
+            MaterialFactory.makeOpaqueWithColor(context, Color(255f, 255f, 0f))
+                .thenAccept { redMat ->
+                    rod.renderable = ShapeFactory.makeCylinder(0.01f, axisSize, Vector3.zero(), redMat)
+                }
+            completableFutureNode.complete(rod)
+        }else{
+
         
         val axisSize = 3.0f
         val axisRadius = 0.005f
@@ -147,16 +158,10 @@ class ArModelBuilder {
             objectManagerChannel,
             transformationSystem
         )*/
-        if (modelPath == "YellowRod"){
-            val rod = Node()
-            rod.worldPosition = Vector3(0f, 2.0f / 2, 0f)
-
-            MaterialFactory.makeOpaqueWithColor(context, Color(255f, 255f, 0f))
-                .thenAccept { redMat ->
-                    rod.renderable = ShapeFactory.makeCylinder(0.01f, axisSize, Vector3.zero(), redMat)
-                }
-            completableFutureNode.complete(rod)
-        }else{
+        }
+        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
+        
+        
         ModelRenderable.builder()
                 .setSource(context, RenderableSource.builder().setSource(
                         context,
@@ -179,7 +184,7 @@ class ArModelBuilder {
                     completableFutureNode.completeExceptionally(throwable)
                     null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
                 }
-        }
+        
         return completableFutureNode
     }
 }

@@ -60,6 +60,7 @@ class ArModelBuilder: NSObject {
     // Creates a node from a given gltf2 (.gltf) model in the Flutter assets folder
     func makeNodeFromGltf(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
         
+
         var scene: SCNScene
         let node: SCNNode = SCNNode()
 
@@ -146,7 +147,9 @@ class ArModelBuilder: NSObject {
     
     // Creates a node form a given glb model path
     func makeNodeFromWebGlb(name: String, modelURL: String, transformation: Array<NSNumber>?) -> Future<SCNNode?, Never> {
-        
+        if modelPath == "YellowRod"{
+            SCNNode()
+        }
         return Future {promise in
             var node: SCNNode? = SCNNode()
             
