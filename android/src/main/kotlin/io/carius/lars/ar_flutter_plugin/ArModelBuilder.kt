@@ -131,9 +131,9 @@ class ArModelBuilder {
             val rod = Node()
             rod.worldPosition = Vector3(0f, 0f, 0f)
 
-            MaterialFactory.makeOpaqueWithColor(context, Color(255f, 255f, 0f))
+            MaterialFactory.makeOpaqueWithColor(context, Color(0f, 0f, 255f))
                 .thenAccept { redMat ->
-                    rod.renderable = ShapeFactory.makeCylinder(0.01f, 300f, Vector3.zero(), redMat)
+                    rod.renderable = ShapeFactory.makeCylinder(1f, 280f, Vector3.zero(), redMat)
                 }
             completableFutureNode.complete(rod)
         }else{
