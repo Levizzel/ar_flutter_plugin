@@ -125,10 +125,10 @@ class ArModelBuilder {
     fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
         val localTransform = deserializeMatrix4(transformation)
-        val axisSize = 3.0f
-        val axisRadius = 0.005f
+        var axisSize = 3.0f
+        var axisRadius = 0.005f
         val yNode = Node()
-        val color = Color(255f, 0f, 0f)
+        var color = Color(255f, 0f, 0f)
 
         if (modelPath == "YellowRod.glb"){
             axisSize = 280f
