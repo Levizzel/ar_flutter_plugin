@@ -127,21 +127,18 @@ class ArModelBuilder {
         val localTransform = deserializeMatrix4(transformation)
         val axisSize = 3.0f
         val axisRadius = 0.005f
-        if (modelPath == "YellowRod.glb"){
-            val rod = Node()
-            rod.worldPosition = Vector3(0f, 0f, 0f)
-
-            MaterialFactory.makeOpaqueWithColor(context, Color(0f, 0f, 255f))
-                .thenAccept { redMat ->
-                    rod.renderable = ShapeFactory.makeCylinder(1f, 280f, Vector3.zero(), redMat)
-                }
-            completableFutureNode.complete(rod)
-        }else{
-
         val yNode = Node()
+        val color = Color(255f, 0f, 0f)
+
+        if (modelPath == "YellowRod.glb"){
+            axisSize = 280f
+            axisRadius = 1f
+            color = Color(0f,0f,255f)
+            //completableFutureNode.complete(rod)
+        }
         yNode.worldPosition = Vector3(0f, axisSize / 2, 0f)
 
-        MaterialFactory.makeOpaqueWithColor(context, Color(255f, 0f, 0f))
+        MaterialFactory.makeOpaqueWithColor(context, color)
                 .thenAccept { redMat ->
                     yNode.renderable = ShapeFactory.makeCylinder(axisRadius, axisSize, Vector3.zero(), redMat)
                 }
@@ -156,7 +153,7 @@ class ArModelBuilder {
             objectManagerChannel,
             transformationSystem
         )*/
-        }
+        
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
         
 
