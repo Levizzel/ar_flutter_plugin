@@ -125,21 +125,19 @@ class ArModelBuilder {
     fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
         val localTransform = deserializeMatrix4(transformation)
-        
+        val axisSize = 3.0f
+        val axisRadius = 0.005f
         if (modelPath == "YellowRod.glb"){
             val rod = Node()
-            rod.worldPosition = Vector3(0f, 2.0f / 2, 0f)
+            rod.worldPosition = Vector3(0f, 0f, 0f)
 
             MaterialFactory.makeOpaqueWithColor(context, Color(255f, 255f, 0f))
                 .thenAccept { redMat ->
-                    rod.renderable = ShapeFactory.makeCylinder(0.01f, axisSize, Vector3.zero(), redMat)
+                    rod.renderable = ShapeFactory.makeCylinder(0.01f, 300f, Vector3.zero(), redMat)
                 }
             completableFutureNode.complete(rod)
         }else{
 
-        
-        val axisSize = 3.0f
-        val axisRadius = 0.005f
         val yNode = Node()
         yNode.worldPosition = Vector3(0f, axisSize / 2, 0f)
 
@@ -161,7 +159,7 @@ class ArModelBuilder {
         }
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
         
-        
+
         ModelRenderable.builder()
                 .setSource(context, RenderableSource.builder().setSource(
                         context,
