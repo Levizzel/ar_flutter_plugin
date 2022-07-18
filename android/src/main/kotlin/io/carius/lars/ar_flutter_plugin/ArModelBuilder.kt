@@ -131,12 +131,11 @@ class ArModelBuilder {
         var color = Color(255f, 0f, 0f)
 
         if (modelPath == "YellowRod.glb"){
-            axisSize = 280f
-            axisRadius = 1f
+            
             color = Color(0f,0f,255f)
             //completableFutureNode.complete(rod)
         }
-        yNode.worldPosition = Vector3(0f, axisSize / 2, 0f)
+        //yNode.worldPosition = Vector3(0f, axisSize / 2, 0f)
 
         MaterialFactory.makeOpaqueWithColor(context, color)
                 .thenAccept { redMat ->
@@ -173,7 +172,14 @@ class ArModelBuilder {
                     gltfNode.worldPosition = transform.second
                     gltfNode.worldRotation = transform.third
                     gltfNode.addChild(yNode)
-                    completableFutureNode.complete(gltfNode)
+                    if (modelPath == "YellowRod.glb"){
+            
+                        gltfNode.renderable = yNode.renderable
+
+                    }else{
+                        completableFutureNode.complete(gltfNode)
+                    }
+                   
                 }
                 .exceptionally{throwable ->
                     completableFutureNode.completeExceptionally(throwable)
