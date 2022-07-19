@@ -121,7 +121,20 @@ class ArModelBuilder: NSObject {
         
         var scene: SCNScene
         let node: SCNNode = SCNNode()
-
+        if (name.contains("blueRod")){
+            var geometry: SCNGeometry
+            geometry = SCNCylinder(0.008,2.5)
+            var material: SCNMaterial
+            material = SCNMaterial()
+            material.diffuse.contents = UIColor.blue
+            geometry.insertMaterial(material,0)
+            node = SCNNode(geometry: geometry)
+            node.name = name
+            if let transform = transformation {
+                node.transform = deserializeMatrix4(transform)
+            }
+            return node
+        }
         do {
             let sceneSource = try GLTFSceneSource(path: modelPath)
             scene = try sceneSource.scene()
@@ -147,9 +160,6 @@ class ArModelBuilder: NSObject {
     
     // Creates a node form a given glb model path
     func makeNodeFromWebGlb(name: String, modelURL: String, transformation: Array<NSNumber>?) -> Future<SCNNode?, Never> {
-        if modelPath == "YellowRod"{
-            SCNNode()
-        }
         return Future {promise in
             var node: SCNNode? = SCNNode()
             

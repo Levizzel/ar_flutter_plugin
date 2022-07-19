@@ -130,9 +130,11 @@ class ArModelBuilder {
         val yNode = Node()
         var color = Color(255f, 0f, 0f)
 
-        if (modelPath == "YellowRod.glb"){
+         if ("blueRod" in name){
             
             color = Color(0f,0f,255f)
+            axisRadius = axisRadius + 0.002f
+            axisSize = axisSize - 0.3f
             //completableFutureNode.complete(rod)
         }
         //yNode.worldPosition = Vector3(0f, axisSize / 2, 0f)
@@ -171,15 +173,15 @@ class ArModelBuilder {
                     gltfNode.worldScale = transform.first
                     gltfNode.worldPosition = transform.second
                     gltfNode.worldRotation = transform.third
-                    gltfNode.addChild(yNode)
-                    if (modelPath == "YellowRod.glb"){
+                    
+                    if ("blueRod" in name){
             
                         gltfNode.renderable = yNode.renderable
 
                     }else{
-                        completableFutureNode.complete(gltfNode)
+                        gltfNode.addChild(yNode)
                     }
-                   
+                    completableFutureNode.complete(gltfNode)
                 }
                 .exceptionally{throwable ->
                     completableFutureNode.completeExceptionally(throwable)
