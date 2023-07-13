@@ -117,9 +117,9 @@ class ArModelBuilder: NSObject {
     
     // Creates a node from a given glb model in the app's documents directory
     func makeNodeFromFileSystemGLB(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
-        let node: SCNNode = SCNNode()
+
         let textGeometry: SCNText = SCNText(string: modelPath, extrusionDepth: 1.0)
-        node = SCNNode(geometry: geometry)
+        let node = SCNNode(geometry: textGeometry)
         node.name = name
         if let transform = transformation {
             node.transform = deserializeMatrix4(transform)
