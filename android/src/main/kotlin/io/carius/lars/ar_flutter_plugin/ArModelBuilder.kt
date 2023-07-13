@@ -10,8 +10,11 @@ import com.google.ar.sceneform.assets.RenderableSource
 
 import java.util.concurrent.CompletableFuture
 import android.net.Uri
+import android.graphics.Color
 import android.view.Gravity
 import android.widget.Toast
+import android.widget.RelativeLayout.LayoutParams
+import android.widget.TextView
 import com.google.ar.core.*
 import com.google.ar.sceneform.ArSceneView
 import com.google.ar.sceneform.FrameTime
@@ -122,18 +125,23 @@ class ArModelBuilder {
     }
     
     // Creates a node for a given Text.
-    fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, text: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
+    fun makeNodeFromText(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, text: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
 
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
 
-        val textView = TextView(this)
+        val textView = TextView(context)
         textView.text = text
+        textView.setTextSize(40f)
+        val params: LayoutParams = LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT)
+        textView.setLayoutParams(params)
+        textView.setTextColor(Color.parseColor("#ff000000"))
         
         ViewRenderable.builder()
-            .setView(this, textView)
+            .setView(context, textView)
             .build()
-            .thenAccept{ renderable -> 
+            .thenAccept{ renderable: Renderable -> 
+                renderable.isShadowCaster = false
                 gltfNode.renderable = renderable
                 gltfNode.name = name
                 val transform = deserializeMatrix4(transformation)
@@ -142,15 +150,16 @@ class ArModelBuilder {
                 gltfNode.worldRotation = transform.third
                 completableFutureNode.complete(gltfNode)
             }
-            .exceptionally{throwable ->
+            .exceptionally{throwable: Throwable ->
                 completableFutureNode.completeExceptionally(throwable)
                 null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
             }
+
         return completableFutureNode
     }
 
     // Creates a node form a given glb model path or URL. The gltf asset loading in Sceneform is asynchronous, so the function returns a compleatable future of type Node
-    fun makeNodeFromGlb2(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
+    fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
 
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)

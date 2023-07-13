@@ -117,10 +117,19 @@ class ArModelBuilder: NSObject {
     
     // Creates a node from a given glb model in the app's documents directory
     func makeNodeFromFileSystemGLB(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
+        let node: SCNNode = SCNNode()
+        let textNode: SCNText = SCNText(string: modelPath, extrusionDepth: 1.0)
+        node.addChildNode(textNode)
+        node.name = name
         
+        if let transform = transformation {
+            node.transform = deserializeMatrix4(transform)
+        }
+        return node
+        /*
         var scene: SCNScene
         let node: SCNNode = SCNNode()
-
+        
         do {
             let sceneSource = try GLTFSceneSource(path: modelPath)
             scene = try sceneSource.scene()
@@ -141,7 +150,7 @@ class ArModelBuilder: NSObject {
         } catch {
             print("\(error.localizedDescription)")
             return nil
-        }
+        }*/
     }
     
     // Creates a node form a given glb model path
