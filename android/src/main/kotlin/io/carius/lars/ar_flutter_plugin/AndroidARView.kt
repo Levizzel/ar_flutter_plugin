@@ -791,7 +791,7 @@ internal class AndroidARView(
                             }
                 }
                 4 -> { //Text
-                    val text = assetPath
+                    val text = dict_node["uri"] as String
                     // Add object to scene
                     modelBuilder.makeNodeFromText(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, text, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
