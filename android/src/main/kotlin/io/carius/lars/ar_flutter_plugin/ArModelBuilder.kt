@@ -185,9 +185,9 @@ class ArModelBuilder {
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
         
         val imageView = ImageView(context)
-        val bitMap: BitMap? = loadImageFromUrl(imageUri)
+        val bitMap: Bitmap? = loadImageFromUrl(imageUri)
         imageView.setImageBitmap(bitMap)
-        
+
         ViewRenderable.builder()
             .setView(context, imageView)
             .build()
