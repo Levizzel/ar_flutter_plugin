@@ -534,7 +534,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     }
                     break
                 case 5:
-                    // Add object to scene
+                
+                    // Add image to scene
                     self.modelBuilder.makeNodeFromImage(name: dict_node["name"] as! String, assetPath: dict_node["uri"] as! String, transformation: dict_node["transformation"] as? Array<NSNumber>)
                     .sink(receiveCompletion: {
                                     completion in print("Async Model Downloading Task completed: ", completion)

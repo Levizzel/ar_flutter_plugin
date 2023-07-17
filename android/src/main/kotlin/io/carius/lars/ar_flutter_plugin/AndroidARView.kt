@@ -818,7 +818,10 @@ internal class AndroidARView(
                             }
                 }
                 5 -> { // Image
-                    modelBuilder.makeNodeFromImage(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, dict_node["uri"] as String, dict_node["transformation"] as ArrayList<Double>)
+                    val documentsPath = viewContext.getApplicationInfo().dataDir
+                    val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
+
+                    modelBuilder.makeNodeFromImage(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
