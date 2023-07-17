@@ -533,6 +533,39 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         promise(.success(false))
                     }
                     break
+                case 5:
+                    // Add object to scene
+                    self.modelBuilder.makeNodeFromImage(name: dict_node["name"] as! String, assetPath: dict_node["uri"] as! String, transformation: dict_node["transformation"] as? Array<NSNumber>)
+                    .sink(receiveCompletion: {
+                                    completion in print("Async Model Downloading Task completed: ", completion)
+                    }, receiveValue: { val in
+                        if let node: SCNNode = val {
+                            if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
+                                switch anchorType{
+                                    case 0: //PlaneAnchor
+                                        if let anchor = self.anchorCollection[anchorName]{
+                                            // Attach node to the top-level node of the specified anchor
+                                            self.sceneView.node(for: anchor)?.addChildNode(node)
+                                            promise(.success(true))
+                                        } else {
+                                            promise(.success(false))
+                                        }
+                                    default:
+                                        promise(.success(false))
+                                    }
+                                
+                            } else {
+                                // Attach to top-level node of the scene
+                                self.sceneView.scene.rootNode.addChildNode(node)
+                                promise(.success(true))
+                            }
+                            promise(.success(false))
+                        } else {
+                            self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load renderable \(dict_node["name"] as! String)"])
+                            promise(.success(false))
+                        }
+                    }).store(in: &self.cancellableCollection)
+                    break
                 default:
                     promise(.success(false))
 

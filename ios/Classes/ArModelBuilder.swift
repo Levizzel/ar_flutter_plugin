@@ -128,6 +128,25 @@ class ArModelBuilder: NSObject {
         return node
     }
 
+    func makeNodeFromImage(name: String, assetPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
+        
+        let material = SCNMaterial()
+        let url = NSURL.URLWithString(assetPath)
+        var data = NSData(contentsOfURL : url)
+        var image = UIImage(data : data)
+
+        let planeGeometry = SCNPlane(width: image.size.width, height: image.size.height)
+        material.diffuse.contents = image
+        planeGeometry.materials = [material]
+            
+        let node = SCNNode(geometry: planeGeometry)
+        node.name = name 
+        if let transform = transformation {
+            node.transform = deserializeMatrix4(transform)
+        }
+        return node
+    }
+
     // Creates a node from a given glb model in the app's documents directory
     func makeNodeFromFileSystemGLB(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
 

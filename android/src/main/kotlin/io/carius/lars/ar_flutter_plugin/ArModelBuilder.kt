@@ -15,6 +15,12 @@ import android.view.Gravity
 import android.widget.Toast
 import android.widget.RelativeLayout.LayoutParams
 import android.widget.TextView
+import android.widget.ImageView
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import com.google.ar.core.*
 import com.google.ar.sceneform.ArSceneView
 import com.google.ar.sceneform.FrameTime
@@ -132,7 +138,7 @@ class ArModelBuilder {
 
         val textView = TextView(context)
         textView.text = text
-        textView.setTextSize(40f)
+        textView.setTextSize(120f)
         val params: LayoutParams = LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT)
         textView.setLayoutParams(params)
         textView.setTextColor(Color.parseColor("#ff000000"))
@@ -157,6 +163,52 @@ class ArModelBuilder {
 
         return completableFutureNode
     }
+
+    fun loadImageFromUrl(imageUrl: String): Bitmap? {
+        return try {
+            val url = URL(imageUrl)
+            val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+            val input: InputStream = connection.inputStream
+            val bitmap: Bitmap = BitmapFactory.decodeStream(input)
+            bitmap
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun makeNodeFromImage(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, imageUri: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
+        val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
+
+        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
+        
+        val imageView = ImageView(context)
+        val bitMap: BitMap? = loadImageFromUrl(imageUri)
+        imageView.setImageBitmap(bitMap)
+        
+        ViewRenderable.builder()
+            .setView(context, imageView)
+            .build()
+            .thenAccept{ renderable: Renderable -> 
+                renderable.isShadowCaster = false
+                gltfNode.renderable = renderable
+                gltfNode.name = name
+                val transform = deserializeMatrix4(transformation)
+                gltfNode.worldScale = transform.first
+                gltfNode.worldPosition = transform.second
+                gltfNode.worldRotation = transform.third
+                completableFutureNode.complete(gltfNode)
+            }
+            .exceptionally{throwable: Throwable ->
+                completableFutureNode.completeExceptionally(throwable)
+                null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+            }
+
+        return completableFutureNode
+    }
+
 
     // Creates a node form a given glb model path or URL. The gltf asset loading in Sceneform is asynchronous, so the function returns a compleatable future of type Node
     fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
