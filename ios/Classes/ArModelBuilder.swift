@@ -144,7 +144,7 @@ class ArModelBuilder: NSObject {
                 node.transform = deserializeMatrix4(transform)
             }
             node.scale = SCNVector3(0.01, 0.01, 0.01)
-        return node
+            return node
         }
         return nil
     }

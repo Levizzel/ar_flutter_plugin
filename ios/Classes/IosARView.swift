@@ -534,11 +534,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         promise(.success(false))
                     }
                     break
-                case 5:
+                case 5: // add an image to the scene
                     let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
                     let documentsDirectory = paths[0]
                     let targetPath = documentsDirectory.appendingPathComponent(dict_node["uri"] as! String).path
-                    // Add image to scene
+
                     if let node: SCNNode = self.modelBuilder.makeNodeFromImage(name: dict_node["name"] as! String, assetPath: targetPath, transformation: dict_node["transformation"] as? Array<NSNumber>) {
                         if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
                             switch anchorType{
@@ -561,7 +561,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                         }
                         promise(.success(false))
                     } else {
-                        self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load Text \(dict_node["uri"] as! String)"])
+                        self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load image \(dict_node["uri"] as! String)"])
                         promise(.success(false))
                     }
                     break
