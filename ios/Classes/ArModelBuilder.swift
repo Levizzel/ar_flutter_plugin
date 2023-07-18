@@ -129,11 +129,12 @@ class ArModelBuilder: NSObject {
     }
 
     func makeNodeFromImage(name: String, assetPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
-        
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        let targetPath = documentsDirectory.appendingPathComponent(dict_node["uri"] as! String).path
+
+        let image = UIImage(contentsOfFile: targetPath)    
         let material = SCNMaterial()
-        let url = NSURL.URLWithString(assetPath)
-        var data = NSData(contentsOfURL : url)
-        var image = UIImage(data : data)
 
         let planeGeometry = SCNPlane(width: image.size.width, height: image.size.height)
         material.diffuse.contents = image
