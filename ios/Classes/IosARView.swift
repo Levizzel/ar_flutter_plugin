@@ -539,7 +539,7 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     let documentsDirectory = paths[0]
                     let targetPath = documentsDirectory.appendingPathComponent(dict_node["uri"] as! String).path
                     // Add image to scene
-                    if let node: SCNNode = self.modelBuilder.makeNodeFromImage(name: dict_node["name"] as! String, assetPath: dict_node["uri"] as! String, transformation: dict_node["transformation"] as? Array<NSNumber>) {
+                    if let node: SCNNode = self.modelBuilder.makeNodeFromImage(name: dict_node["name"] as! String, assetPath: targetPath, transformation: dict_node["transformation"] as? Array<NSNumber>) {
                         if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
                             switch anchorType{
                                 case 0: //PlaneAnchor

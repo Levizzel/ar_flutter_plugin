@@ -121,7 +121,7 @@ class ArModelBuilder: NSObject {
         let textGeometry: SCNText = SCNText(string: text, extrusionDepth: 0.2)
         textGeometry.font = UIFont(name: "Optima", size: 1) 
         let node = SCNNode(geometry: textGeometry)
-        node.name = name //22.07.16
+        node.name = name
         if let transform = transformation {
             node.transform = deserializeMatrix4(transform)
         }
@@ -143,6 +143,7 @@ class ArModelBuilder: NSObject {
             if let transform = transformation {
                 node.transform = deserializeMatrix4(transform)
             }
+            node.scale = SCNVector3(0.01, 0.01, 0.01)
         return node
         }
         return nil
@@ -160,7 +161,7 @@ class ArModelBuilder: NSObject {
             scene = try sceneSource.scene()
 
             for child in scene.rootNode.childNodes {
-                child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
+                //child.scale = SCNVector3(0.01,0.01,0.01) // Compensate for the different model dimension definitions in iOS and Android (meters vs. millimeters)
                 //child.eulerAngles.z = -.pi // Compensate for the different model coordinate definitions in iOS and Android
                 //child.eulerAngles.y = -.pi // Compensate for the different model coordinate definitions in iOS and Android
                 node.addChildNode(child.flattenedClone())
