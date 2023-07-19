@@ -138,10 +138,10 @@ class ArModelBuilder {
 
         val textView = TextView(context)
         textView.text = text
-        textView.setTextSize(120f)
+        textView.setTextSize(200f)
         val params: LayoutParams = LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT)
         textView.setLayoutParams(params)
-        textView.setTextColor(Color.parseColor("#ff000000"))
+        textView.setTextColor(Color.parseColor("#ffffffff"))
         
         ViewRenderable.builder()
             .setView(context, textView)
@@ -164,28 +164,13 @@ class ArModelBuilder {
         return completableFutureNode
     }
 
-    fun loadImageFromUrl(imageUrl: String): Bitmap? {
-        return try {
-            val url = URL(imageUrl)
-            val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
-            connection.doInput = true
-            connection.connect()
-            val input: InputStream = connection.inputStream
-            val bitmap: Bitmap = BitmapFactory.decodeStream(input)
-            bitmap
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
     fun makeNodeFromImage(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, imageUri: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
 
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
         
         val imageView = ImageView(context)
-        val bitMap: Bitmap? = loadImageFromUrl(imageUri)
+        val bitMap: Bitmap? = BitmapFactory.decodeFile(imageUri)
         imageView.setImageBitmap(bitMap)
 
         ViewRenderable.builder()
@@ -232,6 +217,7 @@ class ArModelBuilder {
                         context,
                         Uri.parse(modelPath),
                         RenderableSource.SourceType.GLB)
+                        .setRecenterMode(RenderableSource.RecenterMode.CENTER)
                         .build())
                 .setRegistryId(modelPath)
                 .build()
