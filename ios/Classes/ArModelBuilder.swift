@@ -145,6 +145,7 @@ class ArModelBuilder: NSObject {
         let material = SCNMaterial()
         if let image = uiImage {
             let planeGeometry = SCNPlane(width: image.size.width, height: image.size.height)
+            material.isDoubleSided = true
             material.diffuse.contents = image
             planeGeometry.materials = [material]
             
