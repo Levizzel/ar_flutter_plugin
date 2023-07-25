@@ -120,7 +120,17 @@ class ArModelBuilder: NSObject {
 
         let textGeometry: SCNText = SCNText(string: text, extrusionDepth: 0.14)
         textGeometry.font = UIFont(name: "Optima", size: 0.5) 
-        let node = SCNNode(geometry: textGeometry)
+        let textNode = SCNNode(geometry: textGeometry)
+        
+        let (min, max) = textNode.boundingBox
+
+        let dx = min.x + 0.5 * (max.x - min.x)
+        let dy = min.y + 0.5 * (max.y - min.y)
+        let dz = min.z + 0.5 * (max.z - min.z)
+        textNode.pivot = SCNMatrix4MakeTranslation(dx, dy, dz)
+        
+        let node: SCNNode = SCNNode()
+        node.addChildNode(textNode)
         node.name = name
         if let transform = transformation {
             node.transform = deserializeMatrix4(transform)
@@ -137,14 +147,19 @@ class ArModelBuilder: NSObject {
             let planeGeometry = SCNPlane(width: image.size.width, height: image.size.height)
             material.diffuse.contents = image
             planeGeometry.materials = [material]
-                
-            let node = SCNNode(geometry: planeGeometry)
-            node.name = name 
+            
+            let geometryNode = SCNNode(geometry: planeGeometry)
+            geometryNode.scale = SCNVector3(0.0025, 0.0025, 0.0025)
+            
+            // wrapperNode is needed so that transformation of node can be safely done and does not effect the plane geometry
+            let wrapperNode = SCNNode()
+            wrapperNode.addChildNode(geometryNode)
+            wrapperNode.name = name 
             if let transform = transformation {
-                node.transform = deserializeMatrix4(transform)
+                wrapperNode.transform = deserializeMatrix4(transform)
             }
-            node.scale = SCNVector3(0.0025, 0.0025, 0.0025)
-            return node
+
+            return wrapperNode
         }
         return nil
     }
