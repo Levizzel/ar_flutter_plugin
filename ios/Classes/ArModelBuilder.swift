@@ -121,7 +121,7 @@ class ArModelBuilder: NSObject {
         let textGeometry: SCNText = SCNText(string: text, extrusionDepth: 0.14)
         textGeometry.font = UIFont(name: "Optima", size: 0.5) 
         let material = SCNMaterial()
-        material.diffuse.contents = UIColor(red: 0.0, green: 0.2588, blue: 0.2588, alpha: 0.0)
+        material.diffuse.contents = UIColor(red: 0.0, green: 0.2588, blue: 0.2588, alpha: 1.0)
         textGeometry.materials = [material]
         let textNode = SCNNode(geometry: textGeometry)
         
