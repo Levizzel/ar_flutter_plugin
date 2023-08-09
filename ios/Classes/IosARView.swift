@@ -19,7 +19,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     var cancellableCollection = Set<AnyCancellable>() //Used to store all cancellables in (needed for working with Futures)
     var anchorCollection = [String: ARAnchor]() //Used to bookkeep all anchors created by Flutter calls
     
-    var videoNodesCollection = [String: (SKVideoNode, Bool)]()
+    var videoNodesCollection = [String: (AVPlayer, Bool)]()
+    var currentActiveAVPlayer: AVPlayer? = nil
 
     private var cloudAnchorHandler: CloudAnchorHandler? = nil
     private var arcoreSession: GARSession? = nil
@@ -151,14 +152,22 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 if let name = arguments!["name"] as? String {
                     let videoNodesCollectionTupel = videoNodesCollection[name]
                     if let vNCT = videoNodesCollectionTupel {
-                        let videoNode: SKVideoNode = vNCT.0
+                        let videoNode: AVPlayer = vNCT.0
                         let isPlaying: Bool = vNCT.1
                         if (isPlaying){
                             videoNodesCollection[name]!.0.pause()
                             videoNodesCollection[name]!.1 = false
+                            currentActiveAVPlayer = nil
                         }else{
                             videoNodesCollection[name]!.0.play()
                             videoNodesCollection[name]!.1 = true
+                            currentActiveAVPlayer = videoNodesCollection[name]!.0
+                            for key in videoNodesCollection.keys {
+                                if(key != name){
+                                    videoNodesCollection[key]!.0.pause()
+                                    videoNodesCollection[key]!.1 = false
+                                }
+                            }
                         }
                     }
                 }
@@ -587,7 +596,14 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     let urlNullable = URL(string: dict_node["uri"] as! String)
 
                     if let url = urlNullable {
-                        let videoNode = SKVideoNode(url: url)
+                        let avPlayer = AVPlayer(url: url)
+                        NotificationCenter.default
+                            .addObserver(self,
+                            selector: #selector(self.playerDidFinishPlaying),
+                            name: .AVPlayerItemDidPlayToEndTime,
+                            object: avPlayer.currentItem)
+                        
+                        let videoNode = SKVideoNode(url: url)        
                         self.videoNodesCollection[dict_node["name"] as! String] = (videoNode, false)
                         if let node: SCNNode = self.modelBuilder.makeNodeFromVideo(name: dict_node["name"] as! String, skVideoNode: videoNode, transformation: dict_node["transformation"] as? Array<NSNumber>) {
                             if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
@@ -626,6 +642,13 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
         }
     }
     
+    @objc func playerDidFinishPlaying(note: NSNotification){
+        if let activePlayer = self.currentActiveAVPlayer {
+            activePlayer.seek(to: CMTime.zero)
+            activePlayer.play()
+        }
+    }
+
     func transformNode(name: String, transform: Array<NSNumber>) {
         let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true)
         node?.transform = deserializeMatrix4(transform)

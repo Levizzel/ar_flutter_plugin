@@ -181,9 +181,14 @@ class ArModelBuilder: NSObject {
 
             videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
             videoNode.yScale = -1.0
+            let mat = SCNMaterial()
+            let controll = AVPlayerViewController()
+            controll.showPlaybaclControls = true
+            mat.diffuse.contents = controll
+            mat.isDoubleSided = true
             plane.firstMaterial?.diffuse.contents = videoScene
             plane.firstMaterial?.isDoubleSided = true
-
+            plane.insertMaterial(mat, at: 1)
             let planeNode = SCNNode(geometry: plane)
 
             node.addChildNode(planeNode)
