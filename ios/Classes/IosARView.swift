@@ -603,8 +603,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                             name: .AVPlayerItemDidPlayToEndTime,
                             object: avPlayer.currentItem)
                         
-                        let videoNode = SKVideoNode(url: url)        
-                        self.videoNodesCollection[dict_node["name"] as! String] = (videoNode, false)
+                        let videoNode = SKVideoNode(avPlayer: avPlayer)        
+                        self.videoNodesCollection[dict_node["name"] as! String] = (avPlayer, false)
                         if let node: SCNNode = self.modelBuilder.makeNodeFromVideo(name: dict_node["name"] as! String, skVideoNode: videoNode, transformation: dict_node["transformation"] as? Array<NSNumber>) {
                             if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
                                 switch anchorType{
