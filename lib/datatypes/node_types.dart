@@ -5,5 +5,6 @@ enum NodeType {
   fileSystemAppFolderGLB, // Node with renderable with fileending .glb in the documents folder of the current app
   fileSystemAppFolderGLTF2, // Node with renderable with fileending .gltf in the documents folder of the current app
   text, // Node that displays a provided text
-  image, // Node that displays a image
+  image, // Node that displays a image,
+  video, // Node to display a video
 }

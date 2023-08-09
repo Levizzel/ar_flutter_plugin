@@ -1,6 +1,7 @@
 import UIKit
 import Foundation
 import ARKit
+import SpriteKit
 import GLTFSceneKit
 import Combine
 
@@ -142,7 +143,6 @@ class ArModelBuilder: NSObject {
     }
 
     func makeNodeFromImage(name: String, assetPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
-        
 
         let uiImage = UIImage(contentsOfFile: assetPath)    
         let material = SCNMaterial()
@@ -168,6 +168,30 @@ class ArModelBuilder: NSObject {
         return nil
     }
 
+    func makeNodeFromVideo(name: String, urlPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
+
+        let videoNode = SKVideoNode(url: URL(string: urlPath))
+
+        videoNode.play()
+
+        let videoScene = SKScene(size: CGSize(width: 1920, height: 1080))
+
+        videoScene.addChild(videoNode)
+
+        let plane = SCNPlane(width: 3, height: 3 * 1080 / 1920)
+
+        videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
+
+        plane.firstMaterial?.diffuse.contents = videoScene
+
+        let planeNode = SCNNode(geometry: plane)
+
+        
+
+        node.addChildNode(planeNode)
+
+    }
+    
     // Creates a node from a given glb model in the app's documents directory
     func makeNodeFromFileSystemGLB(name: String, modelPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
 
