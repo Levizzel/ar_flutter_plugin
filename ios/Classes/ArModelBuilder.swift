@@ -182,9 +182,10 @@ class ArModelBuilder: NSObject {
             videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
             videoNode.yScale = -1.0
             plane.firstMaterial?.diffuse.contents = videoScene
+            plane.firstMaterial?.isDoubleSided = true
 
             let planeNode = SCNNode(geometry: plane)
-            planeNode.eulerAngles.x = -.pi/2
+
             node.addChildNode(planeNode)
             node.name = name
             if let transform = transformation {
