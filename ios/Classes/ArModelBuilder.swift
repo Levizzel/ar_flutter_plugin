@@ -169,27 +169,34 @@ class ArModelBuilder: NSObject {
     }
 
     func makeNodeFromVideo(name: String, urlPath: String, transformation: Array<NSNumber>?) -> SCNNode? {
+        let urlNullable = URL(string:urlPath)
 
-        let videoNode = SKVideoNode(url: URL(string: urlPath))
+        if let url = urlNullable {
+            let node = SCNNode()
+            let videoNode = SKVideoNode(url: URL(string: urlPath))
 
-        videoNode.play()
+            videoNode.play()
 
-        let videoScene = SKScene(size: CGSize(width: 1920, height: 1080))
+            let videoScene = SKScene(size: CGSize(width: 1920, height: 1080))
 
-        videoScene.addChild(videoNode)
+            videoScene.addChild(videoNode)
 
-        let plane = SCNPlane(width: 3, height: 3 * 1080 / 1920)
+            let plane = SCNPlane(width: 3, height: 3 * 1080 / 1920)
 
-        videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
+            videoNode.position = CGPoint(x: videoScene.size.width/2, y: videoScene.size.height/2)
 
-        plane.firstMaterial?.diffuse.contents = videoScene
+            plane.firstMaterial?.diffuse.contents = videoScene
 
-        let planeNode = SCNNode(geometry: plane)
+            let planeNode = SCNNode(geometry: plane)
 
-        
-
-        node.addChildNode(planeNode)
-
+            node.addChildNode(planeNode)
+            node.name = name
+            if let transform = transformation {
+                node.transform = deserializeMatrix4(transform)
+            }
+            return node
+        }
+        return nil
     }
     
     // Creates a node from a given glb model in the app's documents directory
