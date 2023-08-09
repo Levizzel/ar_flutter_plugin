@@ -19,6 +19,8 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
     var cancellableCollection = Set<AnyCancellable>() //Used to store all cancellables in (needed for working with Futures)
     var anchorCollection = [String: ARAnchor]() //Used to bookkeep all anchors created by Flutter calls
     
+    var videoNodesCollection = [String: (SKVideoNode, Bool)]()
+
     private var cloudAnchorHandler: CloudAnchorHandler? = nil
     private var arcoreSession: GARSession? = nil
     private var arcoreMode: Bool = false
@@ -143,6 +145,22 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                 if let name = arguments!["name"] as? String, let transform = arguments!["transformation"] as? Array<NSNumber> {
                     transformNode(name: name, transform: transform)
                     result(nil)
+                }
+                break
+            case "onVideoTap":
+                if let name = arguments!["name"] as? String {
+                    let videoNodesCollectionTupel = videoNodesCollection[name]
+                    if let vNCT = videoNodesCollectionTupel {
+                        let videoNode: SKVideoNode = vNCT.0
+                        let isPlaying: Bool = vNCT.1
+                        if (isPlaying){
+                            videoNodesCollection[name]!.0.pause()
+                            videoNodesCollection[name]!.1 = false
+                        }else{
+                            videoNodesCollection[name]!.0.play()
+                            videoNodesCollection[name]!.1 = true
+                        }
+                    }
                 }
                 break
             default:
@@ -566,29 +584,37 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     }
                     break
                 case 6: // Video
-                    if let node: SCNNode = self.modelBuilder.makeNodeFromVideo(name: dict_node["name"] as! String, urlPath: dict_node["uri"] as! String, transformation: dict_node["transformation"] as? Array<NSNumber>) {
-                        if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
-                            switch anchorType{
-                                case 0: //PlaneAnchor
-                                    if let anchor = self.anchorCollection[anchorName]{
-                                        // Attach node to the top-level node of the specified anchor
-                                        self.sceneView.node(for: anchor)?.addChildNode(node)
-                                        promise(.success(true))
-                                    } else {
+                    let urlNullable = URL(string:urlPath)
+
+                    if let url = urlNullable {
+                        let videoNode = SKVideoNode(url: url)
+                        videoNodesCollection[dict_node["name"] as! String] = (videoNode, false)
+                        if let node: SCNNode = self.modelBuilder.makeNodeFromVideo(name: dict_node["name"] as! String, skVideoNode: videoNode, transformation: dict_node["transformation"] as? Array<NSNumber>) {
+                            if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
+                                switch anchorType{
+                                    case 0: //PlaneAnchor
+                                        if let anchor = self.anchorCollection[anchorName]{
+                                            // Attach node to the top-level node of the specified anchor
+                                            self.sceneView.node(for: anchor)?.addChildNode(node)
+                                            promise(.success(true))
+                                        } else {
+                                            promise(.success(false))
+                                        }
+                                    default:
                                         promise(.success(false))
                                     }
-                                default:
-                                    promise(.success(false))
-                                }
-                            
+                                
+                            } else {
+                                // Attach to top-level node of the scene
+                                self.sceneView.scene.rootNode.addChildNode(node)
+                                promise(.success(true))
+                            }
+                            promise(.success(false))
                         } else {
-                            // Attach to top-level node of the scene
-                            self.sceneView.scene.rootNode.addChildNode(node)
-                            promise(.success(true))
+                            self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load Video \(dict_node["uri"] as! String)"])
+                            promise(.success(false))
                         }
-                        promise(.success(false))
-                    } else {
-                        self.sessionManagerChannel.invokeMethod("onError", arguments: ["Unable to load Video \(dict_node["uri"] as! String)"])
+                    }else {
                         promise(.success(false))
                     }
                     break

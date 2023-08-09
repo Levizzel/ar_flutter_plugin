@@ -145,4 +145,8 @@ class ARObjectManager {
   removeNode(ARNode node) {
     _channel.invokeMethod<String>('removeNode', {'name': node.name});
   }
+
+  controllVideoNode(ARNode node) {
+    _channel.invokeMethod<String>('onVideoTap', {'name': node.name});
+  }
 }
