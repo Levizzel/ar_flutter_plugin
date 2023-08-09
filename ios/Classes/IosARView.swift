@@ -584,11 +584,11 @@ class IosARView: NSObject, FlutterPlatformView, ARSCNViewDelegate, UIGestureReco
                     }
                     break
                 case 6: // Video
-                    let urlNullable = URL(string:urlPath)
+                    let urlNullable = URL(string: dict_node["uri"] as! String)
 
                     if let url = urlNullable {
                         let videoNode = SKVideoNode(url: url)
-                        videoNodesCollection[dict_node["name"] as! String] = (videoNode, false)
+                        self.videoNodesCollection[dict_node["name"] as! String] = (videoNode, false)
                         if let node: SCNNode = self.modelBuilder.makeNodeFromVideo(name: dict_node["name"] as! String, skVideoNode: videoNode, transformation: dict_node["transformation"] as? Array<NSNumber>) {
                             if let anchorName = dict_anchor?["name"] as? String, let anchorType = dict_anchor?["type"] as? Int {
                                 switch anchorType{
