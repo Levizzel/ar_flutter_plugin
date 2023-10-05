@@ -91,6 +91,10 @@ internal class AndroidARView(
     private lateinit var sceneUpdateListener: com.google.ar.sceneform.Scene.OnUpdateListener
     private lateinit var onNodeTapListener: com.google.ar.sceneform.Scene.OnPeekTouchListener
 
+
+    private videoViewMap: Map<String, VideoView> = Map<String,VideoView>()
+    private currentActiveVideoView: VideoView? = null
+
     // Method channel handlers
     private val onSessionMethodCall =
             object : MethodChannel.MethodCallHandler {
@@ -209,6 +213,27 @@ internal class AndroidARView(
                                 newTransformation?.let{ transform ->
                                     transformNode(name, transform)
                                     result.success(null)
+                                }
+                            }
+                        }
+                        "onVideoTap" -> {
+                            val nodeName: String? = call.argument<String>("name")
+                            nodeName?.let{ name ->
+                               var view: VideoView? = videoViewMap[name]
+                                view?.let{ videoView ->
+                                    val isPaused = videoView.isPaused()
+                                    if (isPlaying){
+                                        videoView.pause()
+                                        currentActiveVideoView = null
+                                    }else{
+                                        videoView.resume()
+                                        currentActiveVideoView = videoView
+                                        for (key in videoViewMap.keys) {
+                                            if(key != name){
+                                                videoViewMap[key].pause()
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -822,6 +847,43 @@ internal class AndroidARView(
                     val assetPath = documentsPath + "/app_flutter/" + dict_node["uri"] as String
 
                     modelBuilder.makeNodeFromImage(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
+                            .thenAccept{node ->
+                                val anchorName: String? = dict_anchor?.get("name") as? String
+                                val anchorType: Int? = dict_anchor?.get("type") as? Int
+                                if (anchorName != null && anchorType != null) {
+                                    val anchorNode = arSceneView.scene.findByName(anchorName) as AnchorNode?
+                                    if (anchorNode != null) {
+                                        anchorNode.addChild(node)
+                                        completableFutureSuccess.complete(true)
+                                    } else {
+                                        completableFutureSuccess.complete(false)
+                                    }
+                                } else {
+                                    arSceneView.scene.addChild(node)
+                                    completableFutureSuccess.complete(true)
+                                }
+                                completableFutureSuccess.complete(false)
+                            }
+                            .exceptionally { throwable ->
+                                // Pass error to session manager (this has to be done on the main thread if this activity)
+                                val mainHandler = Handler(viewContext.mainLooper)
+                                val runnable = Runnable {sessionManagerChannel.invokeMethod("onError", listOf("Unable to load renderable" +  dict_node["uri"] as String)) }
+                                mainHandler.post(runnable)
+                                completableFutureSuccess.completeExceptionally(throwable)
+                                null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+                            }
+                }
+                6 -> { // Video
+                    
+                    //construct videoView
+                    val videoView = ImageView(context)
+                    Uri uri = Uri.parse(dict_node["uri"] as String)            
+                    videoView.setUri(uri)
+
+                    //store videoView for player controll access
+                    videoViewMap[dict_node["name"] as String] = videoView
+
+                    modelBuilder.makeNodeForVideo(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int

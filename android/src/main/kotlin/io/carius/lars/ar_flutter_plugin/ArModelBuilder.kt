@@ -194,6 +194,32 @@ class ArModelBuilder {
         return completableFutureNode
     }
 
+    //video Node
+    fun makeNodeForVideo(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, videoView: VideoView, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
+        val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
+
+        val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
+
+        ViewRenderable.builder()
+            .setView(context, videoView)
+            .build()
+            .thenAccept{ renderable: Renderable -> 
+                renderable.isShadowCaster = false
+                gltfNode.renderable = renderable
+                gltfNode.name = name
+                val transform = deserializeMatrix4(transformation)
+                gltfNode.worldScale = transform.first
+                gltfNode.worldPosition = transform.second
+                gltfNode.worldRotation = transform.third
+                completableFutureNode.complete(gltfNode)
+            }
+            .exceptionally{throwable: Throwable ->
+                completableFutureNode.completeExceptionally(throwable)
+                null // return null because java expects void return (in java, void has no instance, whereas in Kotlin, this closure returns a Unit which has one instance)
+            }
+
+        return completableFutureNode
+    }
 
     // Creates a node form a given glb model path or URL. The gltf asset loading in Sceneform is asynchronous, so the function returns a compleatable future of type Node
     fun makeNodeFromGlb(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, modelPath: String, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
