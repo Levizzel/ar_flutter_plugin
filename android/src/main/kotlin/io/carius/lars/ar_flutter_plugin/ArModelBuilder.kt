@@ -38,6 +38,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.security.AccessController
 
+import android.widget.VideoView
 
 // Responsible for creating Renderables and Nodes
 class ArModelBuilder {
@@ -195,15 +196,27 @@ class ArModelBuilder {
     }
 
     //video Node
-    fun makeNodeForVideo(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, videoView: VideoView, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
+    fun makeNodeForVideo(context: Context, transformationSystem: TransformationSystem, objectManagerChannel: MethodChannel, enablePans: Boolean, enableRotation: Boolean, name: String, mediaPlayer: MediaPlayer, transformation: ArrayList<Double>): CompletableFuture<CustomTransformableNode> {
         val completableFutureNode: CompletableFuture<CustomTransformableNode> = CompletableFuture()
 
         val gltfNode = CustomTransformableNode(transformationSystem, objectManagerChannel, enablePans, enableRotation)
-
-        ViewRenderable.builder()
-            .setView(context, videoView)
+        
+        texture: ExternalTexture = ExternalTexture()
+        mediaPlayer.setSurface(texture.getSurface())
+        
+        var videoWidth: Float = mediaPlayer.getVideoWidth();
+        var videoHeight: Float = mediaPlayer.getVideoHeight();
+        
+        var CHROMA_KEY_COLOR: Color = Color(0.1843f, 1.0f, 0.098f)
+                 
+        ModelRenderable.builder()
+            .setView(context, context.getResources().getIdentifier("chroma_key_video", "raw", context.getPackageName()))
             .build()
             .thenAccept{ renderable: Renderable -> 
+                mediaPlayer.start()
+                renderable.getMaterial().setExternalTexture("videoTexture", texture);
+                renderable.getMaterial().setFloat4("keyColor", CHROMA_KEY_COLOR);
+
                 renderable.isShadowCaster = false
                 gltfNode.renderable = renderable
                 gltfNode.name = name

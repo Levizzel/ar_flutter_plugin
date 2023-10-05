@@ -12,6 +12,8 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.PixelCopy
 import android.view.View
+import android.widget.VideoView
+import android.media.MediaPlayer
 import android.widget.Toast
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.*
@@ -92,8 +94,9 @@ internal class AndroidARView(
     private lateinit var onNodeTapListener: com.google.ar.sceneform.Scene.OnPeekTouchListener
 
 
-    private videoViewMap: Map<String, VideoView> = Map<String,VideoView>()
-    private currentActiveVideoView: VideoView? = null
+    private var videoViewMap: HashMap<String, MediaPlayer> = HashMap<String, MediaPlayer>()
+    private var currentActiveVideoView: MediaPlayer? = null
+
 
     // Method channel handlers
     private val onSessionMethodCall =
@@ -219,9 +222,9 @@ internal class AndroidARView(
                         "onVideoTap" -> {
                             val nodeName: String? = call.argument<String>("name")
                             nodeName?.let{ name ->
-                               var view: VideoView? = videoViewMap[name]
-                                view?.let{ videoView ->
-                                    val isPaused = videoView.isPaused()
+                                var  view: MediaPlayer? = videoViewMap[name]
+                                view?.let{ videoView: MediaPlayer ->
+                                    val isPlaying = videoView.isPlaying()
                                     if (isPlaying){
                                         videoView.pause()
                                         currentActiveVideoView = null
@@ -230,7 +233,7 @@ internal class AndroidARView(
                                         currentActiveVideoView = videoView
                                         for (key in videoViewMap.keys) {
                                             if(key != name){
-                                                videoViewMap[key].pause()
+                                                videoViewMap[key]?.pause()
                                             }
                                         }
                                     }
@@ -319,6 +322,7 @@ internal class AndroidARView(
         // Destroy AR session
         Log.d(TAG, "dispose called")
         try {
+            
             onPause()
             onDestroy()
             ArSceneView.destroyAllResources()
@@ -876,14 +880,12 @@ internal class AndroidARView(
                 6 -> { // Video
                     
                     //construct videoView
-                    val videoView = ImageView(context)
-                    Uri uri = Uri.parse(dict_node["uri"] as String)            
-                    videoView.setUri(uri)
-
+                    var mediaPlayer: MediaPlayer = MediaPlayer(viewContext)
+                    var uri: Uri = Uri.parse(dict_node["uri"] as String)
                     //store videoView for player controll access
                     videoViewMap[dict_node["name"] as String] = videoView
 
-                    modelBuilder.makeNodeForVideo(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, assetPath, dict_node["transformation"] as ArrayList<Double>)
+                    modelBuilder.makeNodeForVideo(viewContext, transformationSystem, objectManagerChannel, enablePans, enableRotation, dict_node["name"] as String, videoView, dict_node["transformation"] as ArrayList<Double>)
                             .thenAccept{node ->
                                 val anchorName: String? = dict_anchor?.get("name") as? String
                                 val anchorType: Int? = dict_anchor?.get("type") as? Int
